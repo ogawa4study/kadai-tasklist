@@ -15,7 +15,7 @@ class TasksController extends Controller
      */
     public function index()
     {
-        $tasks = Task::paginate(25);
+        $tasks = Task::oderby('id', 'asc')->paginate(10);
         
         return view('tasks.index', [
             'tasks' => $tasks,
