@@ -17,9 +17,13 @@ class TasksController extends Controller
     {
         $tasks = Task::orderBy('id', 'asc')->paginate(10);
         
-        return view('tasks.index', [
-            'tasks' => $tasks,
+        if (\Auth::check()) {
+            return view('tasks.index', [
+                'tasks' => $tasks,
             ]);
+        }else {
+            return view('welcome');
+        }
     }
 
     /**
