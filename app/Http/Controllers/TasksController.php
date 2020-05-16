@@ -15,12 +15,19 @@ class TasksController extends Controller
      */
     public function index()
     {
-        $tasks = Task::orderBy('id', 'asc')->paginate(10);
+        $data = [];
         
         if (\Auth::check()) {
-            return view('tasks.index', [
+            $user = \Auth::user();
+            $tasks = $user->tasks()->orderBy('id', 'asc')->paginate(10);
+            
+            $data = [
+                'user' => $user,
                 'tasks' => $tasks,
-            ]);
+            ];
+            
+            return view('tasks.index', $data);
+            
         }else {
             return view('welcome');
         }
@@ -37,8 +44,8 @@ class TasksController extends Controller
         
         return view('tasks.create', [
             'task' => $task,
-            ]);
-    }
+        ]);
+    }  
 
     /**
      * Store a newly created resource in storage.
@@ -53,10 +60,12 @@ class TasksController extends Controller
             'content' => 'required|max:191',
         ]);
 
-        $task = new Task;
-        $task->status = $request->status;
-        $task->content = $request->content;
-        $task->save();
+        $user = \Auth::user();
+        $user->tasks()->create([
+            'status' => $request->status,
+            'content' => $request->content,
+            // 'user_id' => $request->user_id,←なくても大丈夫
+        ]);
         
         return redirect('/');
     }
@@ -71,9 +80,14 @@ class TasksController extends Controller
     {
         $task = Task::find($id);
         
-        return view('tasks.show', [
-            'task' => $task,
-            ]);
+        if (\Auth::check()) {
+            return view(
+                'tasks.show',
+                ['task' => $task]
+                );
+        }else {
+            return redirect('/'); 
+        }
     }
 
     /**
@@ -86,9 +100,17 @@ class TasksController extends Controller
     {
         $task = Task::find($id);
         
-        return view('tasks.edit', [
-            'task' => $task,
-            ]);
+         if (\Auth::check()) {
+            return view(
+                'tasks.edit',
+                ['task' => $task]
+                );
+        }else {
+            return redirect('/'); 
+        }
+        // return view('tasks.edit', [
+        //     'task' => $task,
+        //     ]);
     }
 
     /**
